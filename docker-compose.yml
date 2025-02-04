@@ -16,15 +16,18 @@ services:
       dockerfile: docker/server/Dockerfile
     environment:
       - NODE_ENV=production
+      - MONGODB_URI=mongodb://mongodb:27017/mp4-to-gif
       - REDIS_URL=redis://redis:6379
       - WORKER_QUEUE=conversion_queue
       - UPLOAD_DIR=/app/uploads
       - OUTPUT_DIR=/app/output
+      - CORS_ORIGIN=http://localhost
     volumes:
       - uploads:/app/uploads
       - output:/app/output
     depends_on:
       - redis
+      - mongodb
 
   worker:
     build:
@@ -32,6 +35,7 @@ services:
       dockerfile: docker/worker/Dockerfile
     environment:
       - NODE_ENV=production
+      - MONGODB_URI=mongodb://mongodb:27017/mp4-to-gif
       - REDIS_URL=redis://redis:6379
       - WORKER_QUEUE=conversion_queue
       - STORAGE_DIR=/app/storage
@@ -39,6 +43,7 @@ services:
       - storage:/app/storage
     depends_on:
       - redis
+      - mongodb
 
   redis:
     image: redis:alpine
@@ -47,8 +52,16 @@ services:
     volumes:
       - redis_data:/data
 
+  mongodb:
+    image: mongo:latest
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+
 volumes:
   uploads:
   output:
   storage:
-  redis_data: 
+  redis_data:
+  mongodb_data: 
