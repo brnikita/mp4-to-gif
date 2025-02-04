@@ -1,0 +1,54 @@
+version: '3.8'
+
+services:
+  client:
+    build:
+      context: .
+      dockerfile: docker/client/Dockerfile
+    ports:
+      - "80:80"
+    depends_on:
+      - server
+
+  server:
+    build:
+      context: .
+      dockerfile: docker/server/Dockerfile
+    environment:
+      - NODE_ENV=production
+      - REDIS_URL=redis://redis:6379
+      - WORKER_QUEUE=conversion_queue
+      - UPLOAD_DIR=/app/uploads
+      - OUTPUT_DIR=/app/output
+    volumes:
+      - uploads:/app/uploads
+      - output:/app/output
+    depends_on:
+      - redis
+
+  worker:
+    build:
+      context: .
+      dockerfile: docker/worker/Dockerfile
+    environment:
+      - NODE_ENV=production
+      - REDIS_URL=redis://redis:6379
+      - WORKER_QUEUE=conversion_queue
+      - STORAGE_DIR=/app/storage
+    volumes:
+      - storage:/app/storage
+    depends_on:
+      - redis
+
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+volumes:
+  uploads:
+  output:
+  storage:
+  redis_data: 

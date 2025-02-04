@@ -1,0 +1,73 @@
+config:
+  target: "http://localhost"
+  phases:
+    - duration: 60
+      arrivalRate: 5
+      name: "Warm up"
+    - duration: 120
+      arrivalRate: 10
+      rampTo: 20
+      name: "Ramp up load"
+    - duration: 300
+      arrivalRate: 20
+      name: "Sustained load"
+  plugins:
+    expect: {}
+  socketio:
+    transports: ["websocket"]
+  processor: "./functions.js"
+
+scenarios:
+  - name: "MP4 to GIF conversion flow"
+    weight: 1
+    flow:
+      # Login
+      - post:
+          url: "/api/auth/login"
+          json:
+            email: "{{ $processEnvironment.TEST_USER_EMAIL }}"
+            password: "{{ $processEnvironment.TEST_USER_PASSWORD }}"
+          capture:
+            - json: "$.token"
+              as: "token"
+          expect:
+            - statusCode: 200
+            - hasProperty: "token"
+
+      # Upload MP4 file
+      - post:
+          url: "/api/conversion/upload"
+          headers:
+            Authorization: "Bearer {{ token }}"
+          files:
+            - path: "./samples/sample.mp4"
+              fieldName: "file"
+              contentType: "video/mp4"
+          capture:
+            - json: "$.jobId"
+              as: "jobId"
+          expect:
+            - statusCode: 200
+            - hasProperty: "jobId"
+
+      # Connect to WebSocket
+      - think: 1
+      - function: "connectToSocket"
+      
+      # Wait for conversion status updates
+      - think: 2
+      - function: "waitForConversion"
+      
+      # Check conversion result
+      - get:
+          url: "/api/conversion/{{ jobId }}"
+          headers:
+            Authorization: "Bearer {{ token }}"
+          expect:
+            - statusCode: 200
+            - equals:
+                - "{{ status }}"
+                - "completed"
+
+      # Disconnect WebSocket
+      - function: "disconnectSocket" 

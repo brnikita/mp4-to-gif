@@ -1,0 +1,14 @@
+{
+  "name": "mp4-to-gif-load-tests",
+  "version": "1.0.0",
+  "description": "Load tests for MP4 to GIF conversion service",
+  "scripts": {
+    "test": "artillery run config.yml",
+    "test:output": "artillery run --output report.json config.yml",
+    "report": "artillery report report.json"
+  },
+  "dependencies": {
+    "@artilleryio/artillery": "^2.0.0-38",
+    "socket.io-client": "^4.7.2"
+  }
+} 
