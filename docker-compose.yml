@@ -52,11 +52,13 @@ services:
       - MONGODB_URI=mongodb://mongodb:27017/mp4-to-gif
       - REDIS_URL=redis://redis:6379
       - WORKER_QUEUE=conversion_queue
-      - STORAGE_DIR=/app/storage
+      - UPLOAD_DIR=/app/uploads
+      - OUTPUT_DIR=/app/output
     volumes:
       - ./worker:/app
       - /app/node_modules
-      - storage:/app/storage
+      - uploads:/app/uploads
+      - output:/app/output
     command: npm run dev:debug
     depends_on:
       - redis
@@ -79,6 +81,5 @@ services:
 volumes:
   uploads:
   output:
-  storage:
   redis_data:
   mongodb_data: 

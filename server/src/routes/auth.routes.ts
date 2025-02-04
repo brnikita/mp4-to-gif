@@ -3,6 +3,8 @@ import { AuthService } from '../services/auth/auth.service';
 import { validateRequest } from '../middleware/auth';
 import { ApiError } from '../utils/ApiError';
 import { logger } from '../utils/logger';
+import jwt from 'jsonwebtoken';
+import { config } from '../config';
 
 const router = Router();
 
@@ -10,6 +12,13 @@ router.post('/register', validateRequest, async (req, res, next) => {
   try {
     const { email, password } = req.body;
     const user = await AuthService.register(email, password);
+    
+    // Generate token for the newly registered user
+    const token = jwt.sign(
+      { userId: user._id },
+      config.jwt.secret,
+      { expiresIn: config.jwt.expiresIn }
+    );
     
     logger.info('User registered successfully', { email });
     
@@ -19,7 +28,8 @@ router.post('/register', validateRequest, async (req, res, next) => {
         id: user._id,
         email: user.email,
         createdAt: user.createdAt
-      }
+      },
+      token
     });
   } catch (error) {
     next(error);
@@ -37,7 +47,8 @@ router.post('/login', validateRequest, async (req, res, next) => {
       message: 'Login successful',
       user: {
         id: user._id,
-        email: user.email
+        email: user.email,
+        createdAt: user.createdAt
       },
       token
     });

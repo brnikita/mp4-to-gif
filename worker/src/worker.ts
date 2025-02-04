@@ -12,7 +12,7 @@ async function startWorker() {
     logger.info('Connected to MongoDB');
 
     // Initialize conversion queue
-    const conversionQueue = new Bull<ConversionJob>('video-conversion', config.redis.url);
+    const conversionQueue = new Bull<ConversionJob>('conversion-queue', config.redis.url);
     
     // Process jobs
     conversionQueue.process(config.worker.maxConcurrentJobs, processConversionJob);

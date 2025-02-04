@@ -30,13 +30,19 @@ app.use('/auth', authRoutes);
 app.use('/convert', convertRoutes);
 
 // Health check
-app.get('/health', (_, res) => {
+app.get('/health', async (_, res) => {
+  const jobCounts = await conversionQueue.getJobCounts();
   const health = {
     status: 'healthy',
     timestamp: new Date().toISOString(),
     environment: process.env.NODE_ENV,
     mongoConnection: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected',
-    queueStatus: conversionQueue.isRunning() ? 'running' : 'stopped'
+    queue: {
+      active: jobCounts.active,
+      waiting: jobCounts.waiting,
+      completed: jobCounts.completed,
+      failed: jobCounts.failed
+    }
   };
   res.status(200).json(health);
 });
@@ -50,9 +56,6 @@ setupSocketIO(io as any);
 // Initialize Bull Queue and start server
 async function startServer() {
   try {
-    // Wait for queue to be ready
-    await conversionQueue.isReady();
-
     // Connect to MongoDB
     await mongoose.connect(config.mongodb.uri);
     logger.info('Connected to MongoDB');

@@ -3,7 +3,7 @@ import { config } from '../config';
 import { logger } from './logger';
 import { VideoMetadata } from '../types';
 
-export async function validateVideo(inputPath: string): Promise<void> {
+export async function validateVideo(inputPath: string): Promise<VideoMetadata> {
   const metadata = await getVideoMetadata(inputPath);
   
   // Check video dimensions
@@ -17,6 +17,7 @@ export async function validateVideo(inputPath: string): Promise<void> {
   }
 
   logger.info('Video validation passed:', metadata);
+  return metadata;
 }
 
 function getVideoMetadata(inputPath: string): Promise<VideoMetadata> {

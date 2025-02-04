@@ -1,17 +1,27 @@
 import { Router } from 'express';
 import multer from 'multer';
+import path from 'path';
 import { authenticate, AuthRequest } from '../middleware/auth';
 import { Conversion } from '../models/conversion.model';
 import { addConversionJob } from '../services/queue/conversion.queue';
 import { config } from '../config';
 import { ApiError } from '../utils/ApiError';
 import { logger } from '../utils/logger';
+import fs from 'fs';
 
 const router = Router();
 
+// Ensure upload and output directories exist
+const uploadDir = process.env.UPLOAD_DIR || '/app/uploads';
+const outputDir = process.env.OUTPUT_DIR || '/app/output';
+
+// Create directories if they don't exist
+fs.mkdirSync(uploadDir, { recursive: true });
+fs.mkdirSync(outputDir, { recursive: true });
+
 // Configure multer for file upload
 const storage = multer.diskStorage({
-  destination: './uploads',
+  destination: uploadDir,
   filename: (req, file, cb) => {
     const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1E9)}`;
     cb(null, `${uniqueSuffix}-${file.originalname}`);
@@ -43,10 +53,15 @@ router.post('/', authenticate, upload.single('video'), async (req: AuthRequest, 
       throw new ApiError(401, 'User not authenticated');
     }
 
+    // Generate output path
+    const outputFileName = path.basename(req.file.originalname, '.mp4') + '.gif';
+    const outputPath = path.join(outputDir, `${Date.now()}-${outputFileName}`);
+
     const conversion = new Conversion({
       userId: req.user.userId,
       originalFileName: req.file.originalname,
       inputPath: req.file.path,
+      outputPath,
       metadata: {
         size: req.file.size,
         // These will be updated by the worker after analysis
@@ -58,13 +73,20 @@ router.post('/', authenticate, upload.single('video'), async (req: AuthRequest, 
 
     await conversion.save();
 
-    // Add to conversion queue
-    await addConversionJob(conversion._id.toString(), req.user.userId);
+    // Add to conversion queue with input and output paths
+    await addConversionJob(
+      conversion._id.toString(),
+      req.user.userId,
+      req.file.path,
+      outputPath
+    );
 
     logger.info('Started conversion', {
       userId: req.user.userId,
       conversionId: conversion._id,
-      fileName: req.file.originalname
+      fileName: req.file.originalname,
+      inputPath: req.file.path,
+      outputPath
     });
 
     res.status(201).json({

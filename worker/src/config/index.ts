@@ -30,10 +30,10 @@ export const config: Config = {
     storagePath: process.env.STORAGE_PATH || './storage',
   },
   video: {
-    maxWidth: 1024,
-    maxHeight: 768,
-    maxDuration: 10, // seconds
+    maxWidth: 1920,
+    maxHeight: 1080,
+    maxDuration: 60, // seconds
     outputHeight: 400,
-    outputFps: 5,
+    outputFps: 10,
   },
 }; 
