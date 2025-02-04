@@ -1,7 +1,8 @@
 export const environment = {
-  production: false,
-  apiUrl: 'http://localhost:3000',
-  socketUrl: 'http://localhost:3000',
+  production: true,
+  apiUrl: '/api',
+  wsUrl: '/ws',
+  socketUrl: 'http://localhost',
   maxFileSize: 10 * 1024 * 1024, // 10MB
   maxDuration: 10, // seconds
   maxWidth: 1024,

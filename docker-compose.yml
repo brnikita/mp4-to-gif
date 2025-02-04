@@ -3,44 +3,61 @@ version: '3.8'
 services:
   client:
     build:
-      context: .
-      dockerfile: docker/client/Dockerfile
+      context: ./client
+      dockerfile: Dockerfile.dev
     ports:
-      - "80:80"
+      - "4200:4200"
+    volumes:
+      - ./client:/app
+      - /app/node_modules
+    command: npm run start
+    environment:
+      - CHOKIDAR_USEPOLLING=true
     depends_on:
       - server
 
   server:
     build:
-      context: .
-      dockerfile: docker/server/Dockerfile
+      context: ./server
+      dockerfile: Dockerfile.dev
+    ports:
+      - "3000:3000"
+      - "9229:9229"
     environment:
-      - NODE_ENV=production
+      - NODE_ENV=development
       - MONGODB_URI=mongodb://mongodb:27017/mp4-to-gif
       - REDIS_URL=redis://redis:6379
       - WORKER_QUEUE=conversion_queue
       - UPLOAD_DIR=/app/uploads
       - OUTPUT_DIR=/app/output
-      - CORS_ORIGIN=http://localhost
+      - CORS_ORIGIN=http://localhost:4200
     volumes:
+      - ./server:/app
+      - /app/node_modules
       - uploads:/app/uploads
       - output:/app/output
+    command: npm run dev:debug
     depends_on:
       - redis
       - mongodb
 
   worker:
     build:
-      context: .
-      dockerfile: docker/worker/Dockerfile
+      context: ./worker
+      dockerfile: Dockerfile.dev
+    ports:
+      - "9230:9229"
     environment:
-      - NODE_ENV=production
+      - NODE_ENV=development
       - MONGODB_URI=mongodb://mongodb:27017/mp4-to-gif
       - REDIS_URL=redis://redis:6379
       - WORKER_QUEUE=conversion_queue
       - STORAGE_DIR=/app/storage
     volumes:
+      - ./worker:/app
+      - /app/node_modules
       - storage:/app/storage
+    command: npm run dev:debug
     depends_on:
       - redis
       - mongodb

@@ -25,34 +25,38 @@ mp4_code_challenge/
 ## Technical Requirements
 
 - Node.js 18.x or higher
-- Docker and Docker Swarm
+- Docker and Docker Compose
+- VS Code (recommended for development)
 - Redis for job queue management
 - MongoDB for user and job state management
 - FFmpeg for video processing
 
-## Quick Start
+## Development Setup
 
 1. Clone the repository
-2. Install dependencies:
-   ```bash
-   # Install frontend dependencies
-   cd client && npm install
-   
-   # Install backend dependencies
-   cd ../server && npm install
-   
-   # Install worker dependencies
-   cd ../worker && npm install
-   ```
+
+2. Install VS Code extensions:
+   - Docker
+   - Remote - Containers
+   - Remote Development
 
 3. Start development environment:
    ```bash
    docker-compose up
    ```
 
-4. Access the application:
-   - Frontend: http://localhost:4200
-   - API: http://localhost:3000
+4. Access the development services:
+   - Frontend: http://localhost:4200 (hot-reloading enabled)
+   - API: http://localhost:3000 (hot-reloading enabled)
+
+### Hot Reloading
+
+The development environment is configured with hot-reloading:
+- Client (Angular): Changes are automatically detected and browser refreshes
+- Server (Express): Nodemon watches for changes and restarts the server
+- Worker: Nodemon watches for changes and restarts the worker process
+
+All source directories are mounted as volumes in Docker, so your local changes are immediately reflected in the containers.
 
 ## Production Deployment
 

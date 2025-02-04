@@ -1,0 +1,17 @@
+{
+    "files.autoSave": "afterDelay",
+    "files.autoSaveDelay": 1000,
+    "remote.containers.defaultExtensions": [
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "ms-azuretools.vscode-docker"
+    ],
+    "docker.commands.attach": "${containerCommand} exec -it ${containerId} /bin/bash",
+    "docker.commands.build": "${containerCommand} build -f ${dockerfile} -t ${tag} ${context}",
+    "docker.commands.run": "${containerCommand} run --rm -d ${exposedPorts} ${tag}",
+    "docker.containers.defaultAction": "start",
+    "docker.containers.groupBy": "Status",
+    "docker.containers.label": "${containerName}",
+    "docker.containers.sortBy": "Label",
+    "docker-compose.detached": true
+} 
