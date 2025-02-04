@@ -8,7 +8,7 @@ import { errorHandler } from './middleware/errorHandler';
 import { authRoutes } from './routes/auth.routes';
 import { convertRoutes } from './routes/convert.routes';
 import { setupSocketIO } from './services/socket';
-import { setupBullQueue } from './services/queue';
+import { conversionQueue } from './services/queue/conversion.queue';
 import { logger } from './utils/logger';
 
 const app = express();
@@ -36,22 +36,26 @@ app.get('/health', (_, res) => res.status(200).send('healthy'));
 app.use(errorHandler);
 
 // Socket.IO setup
-setupSocketIO(io);
+setupSocketIO(io as any);
 
-// Initialize Bull Queue
-setupBullQueue();
+// Initialize Bull Queue and start server
+async function startServer() {
+  try {
+    // Wait for queue to be ready
+    await conversionQueue.isReady();
 
-// Connect to MongoDB
-mongoose.connect(config.mongodb.uri)
-  .then(() => {
+    // Connect to MongoDB
+    await mongoose.connect(config.mongodb.uri);
     logger.info('Connected to MongoDB');
     
     // Start server
     httpServer.listen(config.port, () => {
       logger.info(`Server running on port ${config.port}`);
     });
-  })
-  .catch((error) => {
-    logger.error('MongoDB connection error:', error);
+  } catch (error) {
+    logger.error('Failed to start server:', error);
     process.exit(1);
-  }); 
+  }
+}
+
+startServer(); 

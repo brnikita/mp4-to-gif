@@ -24,7 +24,7 @@ const upload = multer({
     fileSize: config.upload.maxSize // 10MB
   },
   fileFilter: (req, file, cb) => {
-    if (!config.upload.allowedTypes.includes(file.mimetype)) {
+    if (file.mimetype !== 'video/mp4') {
       cb(new Error('Invalid file type. Only MP4 videos are allowed.'));
       return;
     }
