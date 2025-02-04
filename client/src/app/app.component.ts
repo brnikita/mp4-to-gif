@@ -5,7 +5,7 @@ import { AuthService } from './core/services/auth.service';
   selector: 'app-root',
   template: `
     <mat-toolbar color="primary">
-      <span>MP4 to GIF Converter</span>
+      <span>🎥 MP4 to GIF Converter (Dev)</span>
       <span class="spacer"></span>
       <ng-container *ngIf="authService.currentUser$ | async as user">
         <button mat-button routerLink="/dashboard">Dashboard</button>

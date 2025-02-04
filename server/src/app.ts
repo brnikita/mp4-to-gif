@@ -30,7 +30,16 @@ app.use('/auth', authRoutes);
 app.use('/convert', convertRoutes);
 
 // Health check
-app.get('/health', (_, res) => res.status(200).send('healthy'));
+app.get('/health', (_, res) => {
+  const health = {
+    status: 'healthy',
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV,
+    mongoConnection: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected',
+    queueStatus: conversionQueue.isRunning() ? 'running' : 'stopped'
+  };
+  res.status(200).json(health);
+});
 
 // Error handling
 app.use(errorHandler);
