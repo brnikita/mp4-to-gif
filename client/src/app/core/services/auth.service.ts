@@ -15,6 +15,11 @@ export interface AuthResponse {
   message: string;
 }
 
+export interface LoginCredentials {
+  email: string;
+  password: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -28,25 +33,28 @@ export class AuthService {
 
   private loadStoredUser(): void {
     const storedUser = localStorage.getItem('user');
-    if (storedUser) {
-      this.currentUserSubject.next(JSON.parse(storedUser));
+    const token = localStorage.getItem('token');
+    if (storedUser && token) {
+      try {
+        const user = JSON.parse(storedUser);
+        this.currentUserSubject.next(user);
+      } catch (error) {
+        console.error('Error parsing stored user:', error);
+        this.logout(); // Clear invalid data
+      }
+    } else {
+      this.logout(); // Clear any inconsistent state
     }
   }
 
-  register(email: string, password: string): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${environment.apiUrl}/auth/register`, {
-      email,
-      password
-    }).pipe(
+  register(credentials: LoginCredentials): Observable<AuthResponse> {
+    return this.http.post<AuthResponse>(`${environment.apiUrl}/auth/register`, credentials).pipe(
       tap(response => this.handleAuthResponse(response))
     );
   }
 
-  login(email: string, password: string): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${environment.apiUrl}/auth/login`, {
-      email,
-      password
-    }).pipe(
+  login(credentials: LoginCredentials): Observable<AuthResponse> {
+    return this.http.post<AuthResponse>(`${environment.apiUrl}/auth/login`, credentials).pipe(
       tap(response => this.handleAuthResponse(response))
     );
   }
@@ -62,14 +70,20 @@ export class AuthService {
   }
 
   isAuthenticated(): boolean {
-    return !!this.getToken();
+    const token = this.getToken();
+    const user = this.currentUserSubject.value;
+    return !!(token && user);
   }
 
   private handleAuthResponse(response: AuthResponse): void {
-    if (response.token) {
+    if (response && response.token && response.user) {
       localStorage.setItem('token', response.token);
       localStorage.setItem('user', JSON.stringify(response.user));
       this.currentUserSubject.next(response.user);
+    } else {
+      console.error('Invalid auth response:', response);
+      this.logout(); // Clear any inconsistent state
+      throw new Error('Invalid authentication response');
     }
   }
 } 

@@ -17,6 +17,8 @@ export class AuthGuard {
       return true;
     }
 
+    // Clear any stale auth data
+    this.authService.logout();
     return this.router.createUrlTree(['/auth/login']);
   }
 

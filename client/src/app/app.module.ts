@@ -38,19 +38,23 @@ import { DownloadButtonComponent } from './download-button.component';
         loadChildren: () => import('./features/auth/auth.module').then(m => m.AuthModule)
       },
       {
-        path: 'dashboard',
-        loadChildren: () => import('./features/dashboard/dashboard.module').then(m => m.DashboardModule),
-        canActivate: [AuthGuard]
-      },
-      {
-        path: 'conversion',
-        loadChildren: () => import('./features/conversion/conversion.module').then(m => m.ConversionModule),
-        canActivate: [AuthGuard]
-      },
-      {
         path: '',
-        redirectTo: 'dashboard',
-        pathMatch: 'full'
+        canActivate: [AuthGuard],
+        children: [
+          {
+            path: 'dashboard',
+            loadChildren: () => import('./features/dashboard/dashboard.module').then(m => m.DashboardModule)
+          },
+          {
+            path: 'conversion',
+            loadChildren: () => import('./features/conversion/conversion.module').then(m => m.ConversionModule)
+          },
+          {
+            path: '',
+            redirectTo: 'dashboard',
+            pathMatch: 'full'
+          }
+        ]
       }
     ]),
     StoreModule.forRoot({}),

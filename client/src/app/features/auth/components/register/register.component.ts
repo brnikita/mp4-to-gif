@@ -1,8 +1,9 @@
 import { Component } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { Router } from '@angular/router';
-import { AuthService } from '../../services/auth.service';
+import { AuthService, LoginCredentials } from '@app/core/services/auth.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-register',
@@ -164,12 +165,6 @@ export class RegisterComponent {
     // Clear errors when user starts typing
     this.registerForm.valueChanges.subscribe(() => {
       this.serverError = null;
-      Object.keys(this.registerForm.controls).forEach(key => {
-        const control = this.registerForm.get(key);
-        if (control?.hasError('serverError')) {
-          control.setErrors(null);
-        }
-      });
     });
   }
 
@@ -192,9 +187,15 @@ export class RegisterComponent {
 
       try {
         const { email, password } = this.registerForm.value;
-        await this.authService.register({ email, password });
-        this.snackBar.open('Registration successful!', 'Close', { duration: 3000 });
-        this.router.navigate(['/dashboard']);
+        const credentials: LoginCredentials = { email, password };
+        const response = await firstValueFrom(this.authService.register(credentials));
+        
+        if (response && response.token) {
+          this.snackBar.open('Registration successful!', 'Close', { duration: 3000 });
+          await this.router.navigate(['/dashboard']);
+        } else {
+          this.serverError = 'Invalid response from server';
+        }
       } catch (error: any) {
         this.handleError(error);
       } finally {
@@ -206,17 +207,15 @@ export class RegisterComponent {
   }
 
   private handleError(error: any) {
+    console.error('Registration error:', error);
+    
     if (error.status === 409) {
       this.serverError = 'Email already exists';
     } else if (error.status === 422 && error.error?.errors) {
-      // Handle validation errors from server
       const serverErrors = error.error.errors;
-      Object.keys(serverErrors).forEach(key => {
-        const control = this.registerForm.get(key);
-        if (control) {
-          control.setErrors({ serverError: serverErrors[key] });
-        }
-      });
+      this.serverError = Object.values(serverErrors)[0] as string;
+    } else if (error.error?.message) {
+      this.serverError = error.error.message;
     } else {
       this.serverError = 'An unexpected error occurred. Please try again later.';
     }

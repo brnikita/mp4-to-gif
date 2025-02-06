@@ -1,8 +1,9 @@
 import { Component } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
-import { AuthService } from '../../services/auth.service';
+import { AuthService, AuthResponse, LoginCredentials } from '@app/core/services/auth.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-login',
@@ -134,9 +135,15 @@ export class LoginComponent {
       this.serverError = null;
 
       try {
-        await this.authService.login(this.loginForm.value);
-        this.snackBar.open('Login successful!', 'Close', { duration: 3000 });
-        this.router.navigate(['/dashboard']);
+        const credentials: LoginCredentials = this.loginForm.value;
+        const response = await firstValueFrom(this.authService.login(credentials));
+        
+        if (response && response.token) {
+          this.snackBar.open('Login successful!', 'Close', { duration: 3000 });
+          await this.router.navigate(['/dashboard']);
+        } else {
+          this.serverError = 'Invalid response from server';
+        }
       } catch (error: any) {
         this.handleError(error);
       } finally {

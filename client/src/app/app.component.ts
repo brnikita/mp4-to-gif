@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { Router } from '@angular/router';
 import { AuthService } from './core/services/auth.service';
 
 @Component({
@@ -8,8 +9,14 @@ import { AuthService } from './core/services/auth.service';
       <span>🎥 MP4 to GIF Converter (Dev)</span>
       <span class="spacer"></span>
       <ng-container *ngIf="authService.currentUser$ | async as user">
-        <button mat-button routerLink="/dashboard">Dashboard</button>
-        <button mat-button routerLink="/conversion">Convert Video</button>
+        <button mat-button routerLink="/dashboard" routerLinkActive="active">
+          <mat-icon>dashboard</mat-icon>
+          Dashboard
+        </button>
+        <button mat-button routerLink="/conversion" routerLinkActive="active">
+          <mat-icon>movie</mat-icon>
+          Convert Video
+        </button>
         <button mat-icon-button [matMenuTriggerFor]="menu">
           <mat-icon>account_circle</mat-icon>
         </button>
@@ -46,12 +53,28 @@ import { AuthService } from './core/services/auth.service';
       font-size: 14px;
       color: rgba(0, 0, 0, 0.54);
     }
+
+    .mat-button {
+      margin: 0 4px;
+    }
+
+    .mat-button.active {
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+
+    .mat-button .mat-icon {
+      margin-right: 4px;
+    }
   `]
 })
 export class AppComponent {
-  constructor(public authService: AuthService) {}
+  constructor(
+    public authService: AuthService,
+    private router: Router
+  ) {}
 
   logout(): void {
     this.authService.logout();
+    this.router.navigate(['/auth/login']);
   }
 } 
