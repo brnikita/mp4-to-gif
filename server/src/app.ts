@@ -25,6 +25,9 @@ app.use(cors({ origin: config.corsOrigin }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Serve static files from output directory
+app.use('/app/output', express.static(process.env.OUTPUT_DIR || '/app/output'));
+
 // Routes
 app.use('/auth', authRoutes);
 app.use('/convert', convertRoutes);

@@ -16,10 +16,12 @@ import { AppComponent } from './app.component';
 import { AuthInterceptor } from './core/interceptors/auth.interceptor';
 import { AuthGuard } from './core/guards/auth.guard';
 import { environment } from '@env/environment';
+import { DownloadButtonComponent } from './download-button.component';
 
 @NgModule({
   declarations: [
-    AppComponent
+    AppComponent,
+    DownloadButtonComponent
   ],
   imports: [
     BrowserModule,
