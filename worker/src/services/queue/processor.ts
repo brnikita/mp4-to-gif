@@ -9,6 +9,15 @@ import { Conversion } from '../../models/conversion.model';
 import fs from 'fs/promises';
 import path from 'path';
 
+/**
+ * Represents a video conversion job in the queue
+ * 
+ * @interface ConversionJob
+ * @property {string} videoId - Unique identifier for the video conversion
+ * @property {string} userId - ID of the user who requested the conversion
+ * @property {string} inputPath - Path to the uploaded MP4 file
+ * @property {string} outputPath - Path where the converted GIF should be saved
+ */
 interface ConversionJob {
   videoId: string;
   userId: string;
@@ -16,6 +25,20 @@ interface ConversionJob {
   outputPath: string;
 }
 
+/**
+ * Bull queue processor for handling video conversion jobs
+ * 
+ * This processor:
+ * 1. Validates the input video file
+ * 2. Updates job status in MongoDB
+ * 3. Converts the video to GIF format
+ * 4. Handles cleanup of temporary files
+ * 5. Updates final status and metadata
+ * 
+ * @param {Job<ConversionJob>} job - The Bull queue job containing conversion details
+ * @returns {Promise<void>} Resolves when the job is complete
+ * @throws {Error} If any step of the conversion process fails
+ */
 export async function processConversionJob(job: Job<ConversionJob>) {
   const { videoId, userId, inputPath, outputPath } = job.data;
   

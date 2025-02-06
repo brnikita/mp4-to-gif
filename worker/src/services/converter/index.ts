@@ -3,6 +3,23 @@ import { config } from '../../config';
 import { logger } from '../../utils/logger';
 import { ConvertOptions } from '../../types';
 
+/**
+ * Converts an MP4 video file to an optimized GIF using FFmpeg
+ * 
+ * @param {Object} options - The conversion options
+ * @param {string} options.inputPath - Filesystem path to the input MP4 file
+ * @param {string} options.outputPath - Filesystem path where the output GIF should be saved
+ * @param {function} [options.onProgress] - Optional callback function to receive conversion progress updates
+ * @returns {Promise<void>} Resolves when conversion is complete
+ * @throws {Error} If FFmpeg encounters an error during conversion
+ * 
+ * @example
+ * await convertVideo({
+ *   inputPath: '/tmp/input.mp4',
+ *   outputPath: '/tmp/output.gif',
+ *   onProgress: (percent) => console.log(`Progress: ${percent}%`)
+ * });
+ */
 export async function convertVideo({ inputPath, outputPath, onProgress }: ConvertOptions): Promise<void> {
   return new Promise((resolve, reject) => {
     let lastProgress = 0;

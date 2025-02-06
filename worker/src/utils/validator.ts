@@ -3,6 +3,15 @@ import { config } from '../config';
 import { logger } from './logger';
 import { VideoMetadata } from '../types';
 
+/**
+ * Validates an input video file against configured constraints
+ * 
+ * @param {string} inputPath - The filesystem path to the input video file
+ * @returns {Promise<VideoMetadata>} Metadata about the validated video
+ * @throws {Error} If video dimensions exceed maximum allowed size
+ * @throws {Error} If video duration exceeds maximum allowed length
+ * @throws {Error} If video metadata cannot be read
+ */
 export async function validateVideo(inputPath: string): Promise<VideoMetadata> {
   const metadata = await getVideoMetadata(inputPath);
   
@@ -20,6 +29,14 @@ export async function validateVideo(inputPath: string): Promise<VideoMetadata> {
   return metadata;
 }
 
+/**
+ * Extracts metadata from a video file using FFprobe
+ * 
+ * @param {string} inputPath - The filesystem path to the input video file
+ * @returns {Promise<VideoMetadata>} Object containing video width, height and duration
+ * @throws {Error} If FFprobe fails to read the video file
+ * @private
+ */
 function getVideoMetadata(inputPath: string): Promise<VideoMetadata> {
   return new Promise((resolve, reject) => {
     ffmpeg.ffprobe(inputPath, (err: Error | null, metadata: ffmpeg.FfprobeData) => {
