@@ -157,7 +157,7 @@ export class RegisterComponent {
       password: ['', [
         Validators.required,
         Validators.minLength(6),
-        Validators.pattern('^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)[a-zA-Z\\d]{6,}$')
+        Validators.pattern('^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).{6,}$')
       ]],
       confirmPassword: ['', Validators.required]
     }, { validators: this.passwordMatchValidator });
